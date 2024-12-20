@@ -1,6 +1,7 @@
-const { Aturan, Penyakit, Diagnosa } = require("../models")
+const { Aturan, Penyakit, Diagnosa, User } = require("../models")
 const ApiError = require("../utils/apiError")
 const { Gejala } = require("../models")
+const { sendMail } = require("../utils/sendMail")
 
 const forwardChaining = async (req, res, next) => {
   const { gejala } = req.body
@@ -42,6 +43,44 @@ const forwardChaining = async (req, res, next) => {
       id_user: id,
       id_penyakit: id_penyakit,
     })
+
+    const data = {
+      email: req.user.email,
+      subject: "Hasil Diagnosa Anda di Prescripto",
+      html: `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hasil Diagnosa</title>
+  </head>
+  <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f4f4f4;">
+    <div style="background: linear-gradient(to right, #5f6FFF, #5f6FFF); color: white; text-align: center; padding: 20px; border-radius: 10px 10px 0 0;">
+      <h1 style="margin: 0;">Hasil Diagnosa Anda</h1>
+    </div>
+    <div style="background-color: #ffffff; padding: 20px; border-radius: 0 0 10px 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+      <p>Halo, ${req.user.nama},</p>
+      <p>Terima kasih telah menggunakan layanan <b>Prescripto</b>. Berikut adalah hasil diagnosa Anda:</p>
+      <h2 style="color: #5f6FFF;">${penyakit.nama}</h2>
+      <p><b>Deskripsi:</b> ${penyakit.deskripsi}</p>
+      <p><b>Solusi:</b> ${penyakit.solusi}</p>
+      <div style="text-align: center; margin: 20px 0;">
+        <a href="${process.env.CLIENT_URL}/riwayat-diagnosa" target="_blank" 
+           style="display: inline-block; background-color: #5f6FFF; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-size: 16px;">
+           Lihat Riwayat Diagnosa
+        </a>
+      </div>
+      <p>Jika Anda memiliki pertanyaan lebih lanjut, jangan ragu untuk menghubungi tim kami.</p>
+      <p>Salam,<br><b>Prescripto Team</b></p>
+    </div>
+    <div style="text-align: center; color: #888; font-size: 0.8em; margin-top: 20px;">
+      <p>Ini adalah pesan otomatis, mohon jangan membalas email ini.</p>
+    </div>
+  </body>
+  </html>`,
+    }
+    await sendMail(data)
 
     // Kirimkan hasil diagnosa ke frontend
     return res.status(200).json({

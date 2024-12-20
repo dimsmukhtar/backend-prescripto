@@ -160,7 +160,7 @@ const verifyEmail = async (req, res) => {
 
             <p style="line-height: 1.6;">Untuk memulai, klik tombol di bawah dan jelajahi semua hal menakjubkan yang kami tawarkan:</p>
 
-            <a href="[YOUR_SYSTEM_URL]" target="_blank" style="display: inline-block; margin-top: 20px; padding: 10px 20px; color: white; background-color:  #5f6FFF; text-decoration: none; border-radius: 4px; font-size: 16px;">Go to Dashboard</a>
+            <a href="${process.env.CLIENT_URL}" target="_blank" style="display: inline-block; margin-top: 20px; padding: 10px 20px; color: white; background-color:  #5f6FFF; text-decoration: none; border-radius: 4px; font-size: 16px;">Go to Dashboard</a>
 
             <p style="line-height: 1.6;">Jika Anda memiliki pertanyaan, jangan ragu untuk menghubungi tim dukungan kami kapan saja.</p>
 
