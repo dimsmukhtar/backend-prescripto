@@ -4,50 +4,49 @@ const { Gejala } = require("../models")
 const { sendMail } = require("../utils/sendMail")
 
 const forwardChaining = async (req, res, next) => {
-  const { gejala } = req.body
-  const { id } = req.user
+  const { gejala } = req.body // Berisi array ID gejala ["GK1", "GK2", "GK3", "GK4"]
+  const { id } = req.user // ID user yang melakukan diagnosa
+
   try {
+    // Ambil aturan dan penyakit dari database
     const aturan = await Aturan.findAll()
+    const penyakitList = await Penyakit.findAll()
 
-    const kecocokanPenyakit = {}
-
+    // Struktur aturan per penyakit
+    const rulesByPenyakit = {}
     aturan.forEach((rule) => {
-      if (gejala.includes(rule.id_gejala)) {
-        if (!kecocokanPenyakit[rule.id_penyakit]) {
-          kecocokanPenyakit[rule.id_penyakit] = 0
-        }
-        kecocokanPenyakit[rule.id_penyakit] += 1
+      if (!rulesByPenyakit[rule.id_penyakit]) {
+        rulesByPenyakit[rule.id_penyakit] = []
       }
+      rulesByPenyakit[rule.id_penyakit].push(rule.id_gejala)
     })
 
-    // Ambil penyakit dengan jumlah kecocokan tertinggi
-    const penyakitSorted = Object.entries(kecocokanPenyakit).sort((a, b) => b[1] - a[1])
+    // Iterasi setiap penyakit untuk mencari kecocokan
+    for (const penyakit of penyakitList) {
+      const gejalaPenyakit = rulesByPenyakit[penyakit.id] || []
+      let penyakitTerpenuhi = true
 
-    if (penyakitSorted.length === 0) {
-      // Jika tidak ada penyakit yang cocok
-      return next(new ApiError("Tidak ada penyakit yang cocok", 404))
-    }
+      // Periksa apakah semua gejala penyakit ada dalam gejala yang dipilih
+      for (const id_gejala of gejalaPenyakit) {
+        // Jika gejala ini tidak ada dalam gejala yang dipilih oleh user, penyakit tidak terpenuhi
+        if (!gejala.includes(id_gejala)) {
+          penyakitTerpenuhi = false
+          break
+        }
+      }
 
-    // Ambil ID penyakit dengan kecocokan tertinggi
-    const id_penyakit = penyakitSorted[0][0] // ID penyakit pertama dengan kecocokan tertinggi
+      // Jika semua gejala terpenuhi, diagnosa penyakit ini
+      if (penyakitTerpenuhi) {
+        // Simpan hasil diagnosa
+        const diagnosa = await Diagnosa.create({
+          id_user: id,
+          id_penyakit: penyakit.id,
+        })
 
-    // Ambil detail penyakit dari database
-    const penyakit = await Penyakit.findByPk(id_penyakit)
-
-    if (!penyakit) {
-      return next(new ApiError("Penyakit tidak ditemukan di database", 404))
-    }
-
-    // Simpan hasil diagnosa di tabel Diagnosa
-    const diagnosa = await Diagnosa.create({
-      id_user: id,
-      id_penyakit: id_penyakit,
-    })
-
-    const data = {
-      email: req.user.email,
-      subject: "Hasil Diagnosa Anda di Prescripto",
-      html: `
+        const data = {
+          email: req.user.email,
+          subject: "Hasil Diagnosa Anda di Prescripto",
+          html: `
   <!DOCTYPE html>
   <html lang="en">
   <head>
@@ -71,7 +70,7 @@ const forwardChaining = async (req, res, next) => {
            Lihat Riwayat Diagnosa
         </a>
       </div>
-      <p>Jika Anda memiliki pertanyaan lebih lanjut, jangan ragu untuk menghubungi tim kami.</p>
+      <p>Jika Anda memiliki pertanyaan lebih lanjut, jangan ragu untuk menghubungi tim kami atau dengan menu konsultasi di web.</p>
       <p>Salam,<br><b>Prescripto Team</b></p>
     </div>
     <div style="text-align: center; color: #888; font-size: 0.8em; margin-top: 20px;">
@@ -79,18 +78,31 @@ const forwardChaining = async (req, res, next) => {
     </div>
   </body>
   </html>`,
-    }
-    await sendMail(data)
+        }
+        await sendMail(data)
 
-    // Kirimkan hasil diagnosa ke frontend
+        return res.status(200).json({
+          success: true,
+          message: "Diagnosa berhasil",
+          diagnosa,
+          hasil: {
+            id: penyakit.id,
+            nama: penyakit.nama,
+            deskripsi: penyakit.deskripsi,
+            solusi: penyakit.solusi,
+          },
+        })
+      }
+    }
+
+    // Jika tidak ada penyakit yang cocok
     return res.status(200).json({
-      success: true,
-      message: "Diagnosa berhasil",
-      diagnosa,
-      hasil: penyakit,
+      success: false,
+      message: "Tidak ada penyakit yang cocok",
     })
   } catch (err) {
-    return next(new ApiError(err.message), 500)
+    console.error("Error di forwardChaining:", err)
+    return next(new ApiError(err.message, 500))
   }
 }
 

@@ -1,6 +1,7 @@
 const router = require("express").Router()
-const getPenyakitById = require("../controllers/penyakitController")
+const penyakitController = require("../controllers/penyakitController")
 
-router.route("/:id").get(getPenyakitById)
+router.route("/:id").get(penyakitController.getPenyakitById)
+router.route("/").get(penyakitController.getPenyakitList)
 
 module.exports = router

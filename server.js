@@ -8,7 +8,14 @@ const ApiError = require("./utils/apiError")
 const errorHandler = require("./controllers/errorController")
 const router = require("./routes")
 
-app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }))
+const corsOptions = {
+  origin: process.env.CLIENT_URL,
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+}
+
+app.use(cors(corsOptions))
 app.use(express.json())
 app.use(cookieParser())
 app.use(router)

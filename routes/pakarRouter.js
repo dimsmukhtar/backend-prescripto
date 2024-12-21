@@ -1,8 +1,12 @@
 const router = require("express").Router()
-const pakarController = require("../controllers/userController")
+const dashboardController = require("../controllers/pakarController")
 const authenticate = require("../middleware/authenticate")
 const isVerified = require("../middleware/isVerified")
 
-router.route("/login").post(pakarController.loginPakar)
+router.route("/login").post(dashboardController.loginPakar)
+router.route("/user/list").get(dashboardController.userList)
+router.route("/user/:id").get(dashboardController.deleteUser)
+router.route("/user/diagnosa/:id").get(dashboardController.getDiagnosaByIdUser)
+router.route("/dashboard").get(dashboardController.getDataDashboard)
 
 module.exports = router

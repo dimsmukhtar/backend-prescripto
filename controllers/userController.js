@@ -82,7 +82,7 @@ const register = async (req, res, next) => {
       <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #5f6FFF;">${verificationToken}</span>
     </div>
     <p>Masukkan kode ini pada halaman verifikasi untuk menyelesaikan pendaftaran Anda.</p>
-    <p>Kode ini akan kedaluwarsa dalam 24 jam demi alasan keamanan.</p>
+    <p>Kode ini akan kedaluwarsa dalam 24 jam demi alasan keamanan, jadi pastikan anda verifikasi sebelum 24 jam!.</p>
     <p>Jika Anda tidak membuat akun dengan kami, harap abaikan email ini.</p>
     <p>Salam,<br>Prescripto Team</p>
   </div>
@@ -182,7 +182,7 @@ const verifyEmail = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "email sukses terverifikasi",
+      message: "email sukses terverifikasi, silahkan login!",
     })
   } catch (error) {
     return res.status(500).json({
@@ -357,8 +357,12 @@ const me = async (req, res, next) => {
       lastLogin: req.user.lastLogin,
       profileUrl: req.user.profileUrl,
     }
-    console.log(user)
-    console.log(req.user)
+    console.log("data user diubah", user)
+    console.log("data req.user", req.user)
+    console.log("data req.user id", req.user.id)
+    console.log("data req.user nama", req.user.nama)
+    console.log("data req.user email", req.user.email)
+    console.log("data req.user role", req.user.role)
     return res.status(200).json({
       success: true,
       message: "Success",
@@ -413,67 +417,6 @@ const editProfile = async (req, res, next) => {
   }
 }
 
-// pakar
-
-const loginPakar = async (req, res, next) => {
-  const { email, password } = req.body
-  try {
-    if (!email || !password) {
-      return next(new ApiError("Email dan Password diperlukan untuk login!"), 400)
-    }
-
-    const user = await User.findOne({
-      where: {
-        email,
-      },
-    })
-
-    if (!user) {
-      return next(
-        new ApiError("Email tidak terdaftarkan, mohon gunakan email yang sudah teregisterkan!"),
-        401
-      )
-    }
-
-    if (user.role === "user") {
-      return next(new ApiError("Login khusus untuk pakar", 400))
-    }
-
-    const comparePassword = await bcrypt.compare(password, user.password)
-    if (comparePassword === false) {
-      return next(new ApiError("Password yang anda masukkan salah!"), 400)
-    }
-
-    await User.update(
-      {
-        lastLogin: new Date(),
-      },
-      {
-        where: { id: user.id },
-      }
-    )
-
-    const token = jwt.sign(
-      {
-        id: user.id,
-        nama: user.nama,
-        email: user.email,
-        role: user.role,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    )
-
-    return res.status(200).json({
-      success: true,
-      message: "Login pakar berhasil",
-      token,
-    })
-  } catch (err) {
-    return next(new ApiError(err.message), 500)
-  }
-}
-
 module.exports = {
   register,
   login,
@@ -483,5 +426,4 @@ module.exports = {
   forgotPassword,
   me,
   editProfile,
-  loginPakar,
 }

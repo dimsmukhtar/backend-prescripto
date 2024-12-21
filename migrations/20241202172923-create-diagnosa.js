@@ -11,6 +11,12 @@ module.exports = {
       },
       id_user: {
         type: Sequelize.INTEGER,
+        references: {
+          model: "Users",
+          key: "id",
+        },
+        onDelete: "CASCADE", // if course deleted, module will deleted also
+        onUpdate: "CASCADE",
       },
       id_penyakit: {
         type: Sequelize.STRING,
