@@ -7,7 +7,7 @@ module.exports = {
       {
         nama: "dr pakar",
         role: "pakar",
-        email: "argasadewa133@gmail.com",
+        email: "prescripto-pakar@gmail.com",
         password: process.env.ADMIN_PASSWORD,
         isVerified: true,
         profileUrl: "https://ik.imagekit.io/yxctvbjvh/profilepic.png?updatedAt=1734338115538",
