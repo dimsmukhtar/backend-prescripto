@@ -1,8 +1,18 @@
 const router = require("express").Router()
-const { getGejala } = require("../controllers/diagnosaController")
+const gejalaController = require("../controllers/gejalaController")
 const authenticate = require("../middleware/authenticate")
-const isVerified = require("../middleware/isVerified")
+const checkRole = require("../middleware/checkRole")
 
-router.get("/", getGejala)
+router
+  .route("/:id")
+  .get(gejalaController.getGejalaById)
+  .patch(authenticate, checkRole("pakar"), gejalaController.updateGejalaById)
+  .delete(authenticate, checkRole("pakar"), gejalaController.deleteGejalaById)
+router
+  .route("/")
+  .get(gejalaController.getGejalaList)
+  .post(authenticate, checkRole("pakar"), gejalaController.createGejala)
+
+router.get("/:penyakitId/gejala", gejalaController.getGejalaByPenyakit)
 
 module.exports = router

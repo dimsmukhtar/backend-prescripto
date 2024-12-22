@@ -4,6 +4,8 @@
 // crud gejala
 // update pertanyaan user
 const { User, Penyakit, Gejala, Questions, Diagnosa } = require("../models")
+const bcrypt = require("bcrypt")
+const jwt = require("jsonwebtoken")
 const ApiError = require("../utils/apiError")
 
 // pakar
@@ -244,6 +246,46 @@ const getDiagnosaByIdUser = async (req, res, next) => {
   }
 }
 
+// route api getDiagnosaByIdUser = http://localhost:3000/api/v1/pakar/user/diagnosa/3
+
+// response api getDiagnosaByIdUser
+// {
+//   "success": true,
+//   "message": "success, fetch",
+//   "data": [
+//       {
+//           "id": 1,
+//           "id_user": 3,
+//           "id_penyakit": "P2",
+//           "createdAt": "2024-12-21T07:34:51.960Z",
+//           "updatedAt": "2024-12-21T07:34:51.960Z",
+//           "Penyakit": {
+//               "nama": "Gingivitis"
+//           }
+//       },
+//       {
+//           "id": 2,
+//           "id_user": 3,
+//           "id_penyakit": "P3",
+//           "createdAt": "2024-12-21T07:36:43.217Z",
+//           "updatedAt": "2024-12-21T07:36:43.217Z",
+//           "Penyakit": {
+//               "nama": "Periodontitis"
+//           }
+//       },
+//       {
+//           "id": 3,
+//           "id_user": 3,
+//           "id_penyakit": "P2",
+//           "createdAt": "2024-12-21T08:46:03.495Z",
+//           "updatedAt": "2024-12-21T08:46:03.495Z",
+//           "Penyakit": {
+//               "nama": "Gingivitis"
+//           }
+//       }
+//   ]
+// }
+
 const deleteUser = async (req, res, next) => {
   try {
     const user = await User.findOne({
@@ -271,10 +313,33 @@ const deleteUser = async (req, res, next) => {
 
 // route api deleteUser = http://localhost:3000/api/v1/pakar/user/1
 
+const getPenyakitListForPakar = async (req, res, next) => {
+  try {
+    const penyakit = await Penyakit.findAll()
+
+    if (!penyakit || penyakit.length === 0) {
+      return next(new ApiError("Tidak ada data penyakit", 404))
+    }
+
+    const formattedData = penyakit.map((penyakitItem) => ({
+      id: penyakitItem.id,
+      nama: penyakitItem.nama,
+      deskripsi: penyakitItem.deskripsi,
+      solusi: penyakitItem.solusi,
+      gejala: (penyakitItem.Aturans || []).map((aturan) => aturan.Gejala),
+    }))
+
+    res.status(200).json(formattedData)
+  } catch (error) {
+    return next(new ApiError(error.message, 500))
+  }
+}
+
 module.exports = {
   loginPakar,
   getDataDashboard,
   userList,
   getDiagnosaByIdUser,
   deleteUser,
+  getPenyakitListForPakar,
 }
