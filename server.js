@@ -10,7 +10,7 @@ const errorHandler = require("./controllers/errorController")
 const router = require("./routes")
 
 const corsOptions = {
-  origin: process.env.CLIENT_URL,
+  origin: [process.env.CLIENT_URL, process.env.CLIENT_PAKAR_URL],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
