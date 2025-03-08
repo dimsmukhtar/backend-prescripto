@@ -1,3 +1,4 @@
+require("dotenv").config()
 const { Aturan, Penyakit, Diagnosa, User } = require("../models")
 const ApiError = require("../utils/apiError")
 const { Gejala } = require("../models")
