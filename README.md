@@ -1,6 +1,6 @@
 <<<<<<< HEAD
 
-# Sistem Pakar Diagnosa Penyakit Gigi Dengan Metode Forward Chaining Berbasis WEB 🚀
+# Sistem Pakar Diagnosa Penyakit Gigi Dengan Metode Forward Chaining Berbasis WEB 
 
 ## Demo link: 🔗
 
