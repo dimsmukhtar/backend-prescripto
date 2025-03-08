@@ -227,7 +227,7 @@ module.exports = {
         {
           id: "GH2",
           nama: "Gigi Mudah Rusak",
-          deskripsi: "Apakah mudah untuk rusak dan berlubang?",
+          deskripsi: "Apakah gigi anda mudah untuk rusak dan berlubang?",
           createdAt: new Date(),
           updatedAt: new Date(),
         },

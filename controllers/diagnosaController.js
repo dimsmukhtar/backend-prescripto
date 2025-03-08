@@ -4,15 +4,13 @@ const { Gejala } = require("../models")
 const { sendMail } = require("../utils/sendMail")
 
 const forwardChaining = async (req, res, next) => {
-  const { gejala } = req.body // Berisi array ID gejala ["GK1", "GK2", "GK3", "GK4"]
-  const { id } = req.user // ID user yang melakukan diagnosa
+  const { gejala } = req.body
+  const { id } = req.user
 
   try {
-    // Ambil aturan dan penyakit dari database
     const aturan = await Aturan.findAll()
     const penyakitList = await Penyakit.findAll()
 
-    // Struktur aturan per penyakit
     const rulesByPenyakit = {}
     aturan.forEach((rule) => {
       if (!rulesByPenyakit[rule.id_penyakit]) {
@@ -21,23 +19,18 @@ const forwardChaining = async (req, res, next) => {
       rulesByPenyakit[rule.id_penyakit].push(rule.id_gejala)
     })
 
-    // Iterasi setiap penyakit untuk mencari kecocokan
     for (const penyakit of penyakitList) {
       const gejalaPenyakit = rulesByPenyakit[penyakit.id] || []
       let penyakitTerpenuhi = true
 
-      // Periksa apakah semua gejala penyakit ada dalam gejala yang dipilih
       for (const id_gejala of gejalaPenyakit) {
-        // Jika gejala ini tidak ada dalam gejala yang dipilih oleh user, penyakit tidak terpenuhi
         if (!gejala.includes(id_gejala)) {
           penyakitTerpenuhi = false
           break
         }
       }
 
-      // Jika semua gejala terpenuhi, diagnosa penyakit ini
       if (penyakitTerpenuhi) {
-        // Simpan hasil diagnosa
         const diagnosa = await Diagnosa.create({
           id_user: id,
           id_penyakit: penyakit.id,
@@ -95,7 +88,6 @@ const forwardChaining = async (req, res, next) => {
       }
     }
 
-    // Jika tidak ada penyakit yang cocok
     return res.status(200).json({
       success: false,
       message: "Tidak ada penyakit yang cocok",
@@ -109,7 +101,7 @@ const forwardChaining = async (req, res, next) => {
 const getGejala = async (req, res, next) => {
   try {
     const gejala = await Gejala.findAll({
-      attributes: ["id", "deskripsi"], // Ambil hanya ID dan deskripsi
+      attributes: ["id", "deskripsi"],
     })
     return res.status(200).json({
       success: true,
@@ -129,7 +121,7 @@ const riwayatDiagnosa = async (req, res, next) => {
       include: [
         {
           model: Penyakit,
-          attributes: ["nama", "deskripsi"], // Ambil hanya kolom yang diperlukan
+          attributes: ["nama", "deskripsi"],
         },
       ],
     })
@@ -140,7 +132,7 @@ const riwayatDiagnosa = async (req, res, next) => {
         id: d.id,
         namaPenyakit: d.Penyakit?.nama || "Penyakit tidak ditemukan",
         deskripsiPenyakit: d.Penyakit?.deskripsi || "Deskripsi tidak tersedia",
-        tanggalDiagnosa: d.createdAt, // Gunakan createdAt sebagai tanggal diagnosa
+        tanggalDiagnosa: d.createdAt,
       })),
     })
   } catch (error) {

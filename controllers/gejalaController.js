@@ -64,8 +64,8 @@ const getGejalaByPenyakit = async (req, res, next) => {
             {
               model: Penyakit,
               attributes: ["id"],
-              where: { id: penyakitId }, // Filter berdasarkan id_penyakit
-              required: true, // Pastikan hanya aturan yang memiliki penyakit terkait yang diambil
+              where: { id: penyakitId },
+              required: true,
             },
           ],
         },

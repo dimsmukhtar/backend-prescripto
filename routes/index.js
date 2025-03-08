@@ -1,6 +1,5 @@
 const router = require("express").Router()
 
-const testRouter = require("./testRouter")
 const userRouter = require("./userRoutes")
 const pakarRouter = require("./pakarRouter")
 const diagnosaRouter = require("./diagnosaRouter")
